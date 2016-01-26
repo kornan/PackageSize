@@ -73,6 +73,17 @@ public class MainActivity extends AppCompatActivity implements PackageObserver.P
     }
 
     @Override
+    public void onRemoveUserDataCompleted(String packageName, boolean succeded) {
+
+    }
+
+    @Override
+    public void onRemoveCacheDataCompleted(String packageName, boolean succeded) {
+
+    }
+
+
+    @Override
     protected void onDestroy() {
         handler.removeCallbacksAndMessages(null);
         super.onDestroy();
@@ -109,7 +120,8 @@ public class MainActivity extends AppCompatActivity implements PackageObserver.P
         public void onClick(View v) {
             AppInfo appinfo = mlistAppInfo.get((Integer) (v.getTag()));
             try {
-                packageObserver.queryPacakgeSize(appinfo.getPkgName());
+//                packageObserver.getPacakgeSize(appinfo.getPkgName());
+                packageObserver.clearUserData(appinfo.getPkgName());
             } catch (Exception e) {
                 e.printStackTrace();
             }
