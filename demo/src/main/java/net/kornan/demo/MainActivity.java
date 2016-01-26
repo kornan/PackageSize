@@ -7,10 +7,9 @@ import android.content.pm.PackageStats;
 import android.content.pm.ResolveInfo;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.os.Handler;
+import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.format.Formatter;
 import android.view.LayoutInflater;
@@ -38,12 +37,23 @@ public class MainActivity extends AppCompatActivity implements PackageObserver.P
     private long totalsize; //总大小
     PackageObserver packageObserver;
 
+    static WeakReferenceHandler<MainActivity> handler= new WeakReferenceHandler<MainActivity>(){
+        @Override
+        public void handleMessage(Message msg) {
+            Toast.makeText(this.getReference().get(), "" + String.valueOf(msg.obj), Toast.LENGTH_LONG).show();
+        }
+    };
+
+    class CustomHandler<MainActivity> extends WeakReferenceHandler<MainActivity>{
+
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        handler.setWeakReferenceHandler(this);
         mlistAppInfo = new ArrayList<>();
-
         packageObserver = new PackageObserver(this);
         packageObserver.setPackageListener(this);
         init();
@@ -55,13 +65,20 @@ public class MainActivity extends AppCompatActivity implements PackageObserver.P
         cachesize = packageStats.cacheSize;
         datasize = packageStats.dataSize;
         codesize = packageStats.codeSize;
-        totalsize = cachesize + datasize + codesize;
-        Toast.makeText(getBaseContext(), "" + totalsize, Toast.LENGTH_LONG).show();
+        totalsize = codesize + datasize ;
+
+        Message msg=handler.obtainMessage();
+        msg.obj=Formatter.formatFileSize(this, totalsize);
+        msg.sendToTarget();
     }
 
+    @Override
+    protected void onDestroy() {
+        handler.removeCallbacksAndMessages(null);
+        super.onDestroy();
+    }
 
     private void init() {
-
         recyclerView = (RecyclerView) findViewById(R.id.main_layout);
         recyclerView.setLayoutManager(new GridLayoutManager(this, 3));
         recyclerView.setAdapter(new RecyclerView.Adapter<MyViewHolder>() {
